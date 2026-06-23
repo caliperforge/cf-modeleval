@@ -38,7 +38,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install runtime deps
-        run: pip install 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
+        run: pip install pytest 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
       - name: Run unit tests
         run: python -m pytest tests/ -v --tb=short
         env:
@@ -67,7 +67,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install runtime deps
-        run: pip install 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
+        run: pip install pytest 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
 
       # Replay path: re-assert committed receipts when no live keys are configured
       # (default path on fork PRs and on push CI). Verifies the receipt's own
