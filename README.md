@@ -92,10 +92,10 @@ fourth provider is a one-class addition.
 Tested on macOS + Ubuntu 22.04. Python 3.10+.
 
 ```bash
-git clone <repo-url> cf-modeleval-v1
-cd cf-modeleval-v1
+git clone https://github.com/caliperforge/cf-modeleval.git
+cd cf-modeleval
 
-# 1. Install (≈30 seconds)
+# 1. Install (~30 seconds)
 python3 -m pip install 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
 
 # 2. Configure provider keys
@@ -237,7 +237,7 @@ client is constructed once and reused across the leg.
 ## Repository layout
 
 ```
-cf-modeleval-v1/
+cf-modeleval/                        (repo root; artifact version is v1)
 ├── LICENSE                          Apache-2.0
 ├── README.md                        This file
 ├── DISCLOSURE.md                    Non-claims + independent cross-check requirement

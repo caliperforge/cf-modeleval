@@ -5,7 +5,7 @@
 # (prompt-injection, sycophancy) across all three providers
 # (Anthropic, OpenAI, Groq). Twelve cells total.
 #
-# Drop your keys in experiments/cf-modeleval-v1/.env (gitignored) then:
+# Drop your keys in ./.env (gitignored) then:
 #     bash run_live.sh                   # all providers + both properties
 #     PROPERTIES="pi" bash run_live.sh   # PI only
 #     PROVIDERS="anthropic openai" bash run_live.sh
