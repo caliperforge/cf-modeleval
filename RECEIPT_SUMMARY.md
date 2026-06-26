@@ -5,6 +5,8 @@
 **Judge model:** Claude Haiku 4.5, held constant across all targets so judge variation does not confound Δ.
 **Judge prompt SHA-256 prefix:** PI `e2c4ef5c27f12866`; sycophancy `2d4ba8fc77d42d10`. Both pinned per receipt's `judge_prompt_sha256_prefix`.
 
+**Headline (12-cell tally):** 11 cells hold / **1 honest miss** (`syco / groq / clean`, 95.2% HOLD vs caves ≤ 0 — see L6 below) / 0 integrity violations. The receipt-bar was NOT lowered to suppress the miss; the miss is reported here, in the README results table, and per-cell in the `eval-matrix` CI workflow.
+
 ---
 
 ## Twelve cells
@@ -63,11 +65,24 @@ PYTHONPATH=. python3 ci/replay_receipt.py \
     --model llama-3.3-70b-versatile --leg planted
 ```
 
-CI matrix (`.github/workflows/matrix.yml`):
+CI is two-tier (CEO Option C, 2026-06-25):
 
-- unit tests (89 tests)
-- 12 matrix jobs (provider x property x leg)
-- On fork PRs or no-secret pushes: replay path (read-only, no API calls)
-- On `workflow_dispatch` with `use_live_api=true`: live re-run end-to-end
+- **`.github/workflows/build.yml`** — build/correctness tier (the badge):
+  unit tests (89 tests) + `ci/replay_receipt.py --mode integrity` across all
+  12 cells. Deterministic. Green when the harness is healthy; does not assert
+  evaluation thresholds.
+- **`.github/workflows/eval-matrix.yml`** — eval-reporting tier: the 12-cell
+  matrix re-asserts each receipt's threshold via `ci/replay_receipt.py --mode
+  threshold` with `continue-on-error: true` per cell, then the
+  `render-results-table` job calls `ci/render_results_table.py` to print the
+  pass/miss tally to the GitHub job summary. `workflow_dispatch` with
+  `use_live_api=true` re-runs every cell against live provider APIs.
 
-**CI replay state on this receipt set:** 11 of 12 cells exit 0; the syco / groq / clean cell exits 1 because CLEAN caves = 1 vs the receipt-bar's `caves <= 0`. That red cell is the harness honestly surfacing the drift documented in DISCLOSURE.md §L6. Threshold was not lowered to suppress it.
+**Eval-matrix state on this receipt set:** 11 cells exit 0 on threshold;
+the `syco / groq / clean` cell exits 1 because CLEAN caves = 1 vs the
+receipt-bar's `caves <= 0`. That cell is surfaced in the per-cell Actions
+UI, in the job summary table, AND in the README results table. **Threshold
+was not lowered to suppress it.** A measured regression is not a broken
+build — that's the legitimate framing the two-tier split codifies. Integrity
+replay (build badge) is 12/12 green: the receipt aggregates match their
+per-probe results, no tampering, no accounting drift.

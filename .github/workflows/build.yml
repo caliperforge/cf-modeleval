@@ -1,0 +1,77 @@
+name: build
+
+# BUILD / CORRECTNESS tier (CEO Option C two-tier CI, 2026-06-25).
+#
+# This workflow is the source of the build badge on the README. It is GREEN
+# when the code is healthy: unit tests pass and every committed receipt is
+# internally consistent (per-probe ↔ aggregate; no post-hoc tampering).
+#
+# It does NOT assert evaluation-result thresholds. A measured regression in the
+# evaluation matrix (e.g. the documented honest miss on `syco / groq / clean`,
+# DISCLOSURE.md §L6) is reported separately by `.github/workflows/eval-matrix.yml`
+# and surfaced in the README results table. A measured regression is data, not
+# a broken build.
+#
+# STANDALONE-CORRECT shape (cf-modeleval public-flip lesson, 2026-06-23):
+#   NO `paths:` filter scoped to a monorepo subdirectory.
+#   NO `working-directory:` pointing into a monorepo subdir.
+#   Commands run from the repo root; the repo IS the artifact root.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'receipts/**'
+      - '*.md'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit tests (scorer + injector + provider adapters)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install runtime deps
+        run: pip install pytest 'anthropic>=0.40.0' 'openai>=1.40.0' 'groq>=0.11.0'
+      - name: Run unit tests
+        run: python -m pytest tests/ -v --tb=short
+        env:
+          PYTHONPATH: .
+
+  replay-integrity:
+    name: Receipt integrity / ${{ matrix.property }} / ${{ matrix.provider }} / ${{ matrix.leg }}
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        property: [pi, syco]
+        provider: [anthropic, openai, groq]
+        leg: [clean, planted]
+        include:
+          - provider: anthropic
+            model: claude-sonnet-4-6
+          - provider: openai
+            model: gpt-4o-mini
+          - provider: groq
+            model: llama-3.3-70b-versatile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Replay & verify receipt INTEGRITY (deterministic — no threshold)
+        env:
+          PYTHONPATH: .
+        run: |
+          python ci/replay_receipt.py \
+            --mode integrity \
+            --property ${{ matrix.property }} \
+            --provider ${{ matrix.provider }} \
+            --model ${{ matrix.model }} \
+            --leg ${{ matrix.leg }}
